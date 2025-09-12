@@ -1,0 +1,77 @@
+#!/bin/bash
+# update - Auto-update host.py and user-agents.txt from GitHub
+# By Killer-vpn | https://github.com/Nizwara/host-check
+
+set -euo pipefail  # Exit on any error
+
+REPO_URL="https://github.com/Nizwara/host-check"
+HOST_PY_URL="$REPO_URL/raw/main/host.py"
+USER_AGENTS_URL="$REPO_URL/raw/main/user-agents.txt"
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+HOST_PY="$SCRIPT_DIR/host.py"
+USER_AGENTS="$SCRIPT_DIR/user-agents.txt"
+BACKUP_DIR="$SCRIPT_DIR/.backups"
+DATE=$(date +"%Y%m%d_%H%M%S")
+
+echo "🚀 Updating Host Response Checker from $REPO_URL..."
+
+# Buat folder backup jika belum ada
+mkdir -p "$BACKUP_DIR"
+
+# Backup file yang akan di-update
+if [[ -f "$HOST_PY" ]]; then
+    cp "$HOST_PY" "$BACKUP_DIR/host.py.$DATE.bak"
+    echo "💾 Backed up old host.py → $BACKUP_DIR/host.py.$DATE.bak"
+fi
+
+if [[ -f "$USER_AGENTS" ]]; then
+    cp "$USER_AGENTS" "$BACKUP_DIR/user-agents.txt.$DATE.bak"
+    echo "💾 Backed up old user-agents.txt → $BACKUP_DIR/user-agents.txt.$DATE.bak"
+fi
+
+# Cek koneksi internet
+if ! command -v curl >/dev/null 2>&1; then
+    if ! command -v wget >/dev/null 2>&1; then
+        echo "❌ Error: Neither 'curl' nor 'wget' found. Install one to proceed."
+        exit 1
+    else
+        DOWNLOADER="wget -q -O"
+    fi
+else
+    DOWNLOADER="curl -s -o"
+fi
+
+# Download host.py
+echo "⬇️  Downloading latest host.py..."
+if $DOWNLOADER "$HOST_PY" "$HOST_PY_URL"; then
+    echo "✅ host.py updated successfully!"
+else
+    echo "❌ Failed to download host.py. Restoring backup..."
+    mv "$BACKUP_DIR/host.py.$DATE.bak" "$HOST_PY" 2>/dev/null || true
+    exit 1
+fi
+
+# Download user-agents.txt
+echo "⬇️  Downloading latest user-agents.txt..."
+if $DOWNLOADER "$USER_AGENTS" "$USER_AGENTS_URL"; then
+    echo "✅ user-agents.txt updated successfully!"
+else
+    echo "⚠️  Failed to download user-agents.txt. Keeping existing file."
+    # Jangan restore backup jika gagal — biarkan yang lama tetap dipakai
+fi
+
+# Beri izin eksekusi
+chmod +x "$HOST_PY"
+
+# Verifikasi apakah file baru valid
+if [[ ! -s "$HOST_PY" ]] || grep -q "404: Not Found" "$HOST_PY"; then
+    echo "❌ Downloaded file is empty or contains 404 error. Restoring backup..."
+    mv "$BACKUP_DIR/host.py.$DATE.bak" "$HOST_PY"
+    exit 1
+fi
+
+echo ""
+echo "🎉 Update completed successfully!"
+echo "ℹ️  You can now run: ./host.py -t example.com"
+echo ""
