@@ -61,6 +61,7 @@ Anda akan melihat struktur folder seperti ini:
 host-check/
 ├── host.py
 ├── user-agents.txt
+├── update
 └── README.md
 ```
 
