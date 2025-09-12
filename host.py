@@ -2,7 +2,9 @@
 # Host Response Checker v2.9 Final 
 # By Killer-vpn | https://github.com/Nizwara
 
-# Disable all InsecureRequestWarning from urllib3
+# ==========================
+# SILENCE INSECURE REQUEST WARNINGS
+# ==========================
 import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -503,16 +505,22 @@ def main():
     check_and_install_deps()
 
     parser = argparse.ArgumentParser(
-        description='Host Response Checker v2.9.1 - Clean Terminal | File: Full List + Legacy Only',
+        description='Host Response Checker v2.9.2 - No Warnings | Multi-Target | Clean Terminal | Full File Output',
         formatter_class=argparse.RawTextHelpFormatter
     )
     
-    parser.add_argument('-t', '--target', required=True, help='Target domain or IP (e.g., example.com)')
+    parser.add_argument('-t', '--target', help='Target domain or IP (e.g., example.com)')
+    parser.add_argument('-m', '--multi', metavar='', type=str, help='Multi target file (one domain per line)')
     parser.add_argument('-o', '--output', default='results.txt', help='Output file (default: results.txt)')
     parser.add_argument('-p', '--proxy', help='Proxy URL (e.g., http://127.0.0.1:8080)')
     parser.add_argument('--no-banner', action='store_true', help='Hide banner')
 
     args = parser.parse_args()
+
+    # Jika tidak ada -t atau -m, tampilkan help
+    if not args.target and not args.multi:
+        parser.print_help()
+        sys.exit(1)
 
     if not args.no_banner:
         print(f"""
@@ -526,7 +534,10 @@ def main():
          Github : github.com/Nizwara
          Blog : www.nizwara.biz.id
 """)
-        print(f"{Colors.CYAN}[+] Target: {args.target}{Colors.ENDC}")
+        if args.target:
+            print(f"{Colors.CYAN}[+] Target: {args.target}{Colors.ENDC}")
+        if args.multi:
+            print(f"{Colors.CYAN}[+] Multi-target file: {args.multi}{Colors.ENDC}")
         print(f"{Colors.CYAN}[+] Output: {args.output}{Colors.ENDC}")
         if args.proxy:
             print(f"{Colors.CYAN}[+] Proxy: {args.proxy}{Colors.ENDC}")
@@ -535,18 +546,28 @@ def main():
     user_agent = get_random_user_agent()
     print_info(f"Using User-Agent: {user_agent[:50]}...")
 
-    print_info(f"Starting scan for: {args.target}")
-    host_checker = HostResponse(args.target, user_agent, args.proxy)
-    result = host_checker.run_checks()
-
-    # 👇 TAMPILKAN KE TERMINAL — DENGAN "Subdomains Found"
-    print(format_results_for_terminal(result))
-
-    # 👇 SIMPAN KE FILE — TANPA "Subdomains Found", LANGSUNG FULL LIST + LEGACY
-    if save_results(result, args.output):
-        print_success(f"Full report with legacy format saved to {args.output}")
+    if args.multi:
+        try:
+            with open(args.multi, 'r', encoding='utf-8') as f:
+                targets = [line.strip() for line in f if line.strip()]
+            if not targets:
+                print_error(f"No valid targets found in {args.multi}")
+                sys.exit(1)
+            for target in targets:
+                print_info(f"Starting scan for: {target}")
+                host_checker = HostResponse(target, user_agent, args.proxy)
+                result = host_checker.run_checks()
+                print(format_results_for_terminal(result))
+                save_results(result, args.output)
+        except FileNotFoundError:
+            print_error(f"File '{args.multi}' not found.")
+            sys.exit(1)
     else:
-        print_error("Failed to save full report to file")
+        print_info(f"Starting scan for: {args.target}")
+        host_checker = HostResponse(args.target, user_agent, args.proxy)
+        result = host_checker.run_checks()
+        print(format_results_for_terminal(result))
+        save_results(result, args.output)
 
 if __name__ == '__main__':
     try:
