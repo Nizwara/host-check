@@ -1,12 +1,12 @@
 ### ✅ Cara Gunakan (Cuma 1 Perintah!)
 
 
-### instal dependensi:
+# instal dependensi:
 
 ## Untuk Termux (Android)
 
-# 1. Instal Termux dari F-Droid (bukan dari Play Store)
-# 2. Update package dan 
+### 1. Instal Termux dari F-Droid (bukan dari Play Store)
+### 2. Update package dan 
 
 ```bash
 pkg update
@@ -15,16 +15,16 @@ pip install beautifulsoup4 requests
 ```
 
 
-### Untuk VPS (Linux)
+## Untuk VPS (Linux)
 
-# 1. Update sistem dan instal dependensi:
+### 1. Update sistem dan instal dependensi:
 
 ```bash
 sudo apt update
 sudo apt install python3 python3-pip git
 ```
 
-# 1. Instal modul Python yang diperlukan:
+### 1. Instal modul Python yang diperlukan:
 
 ```bash
 pip3 install beautifulsoup4 requests
@@ -32,8 +32,9 @@ pip3 install beautifulsoup4 requests
 
 
 
-
-# 💥 INSTALL SCRIPT       
+#  ╔════════════════╗
+#  ║ 𝐈𝐍𝐒𝐓𝐀𝐋𝐋 𝐒𝐂𝐑𝐈𝐏𝐓    ║ 
+#  ╚════════════════╝
 
 ### 🔧 1. Simpan file `user-agents.txt` di folder yang sama  
 Pastikan file ini ada dan berisi 1000+ user-agent seperti yang kamu punya.
