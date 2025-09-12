@@ -98,7 +98,7 @@ apt update -y && apt install python3 git wget -y && mkdir -p ~/host-check && cd 
 #### ➤ Ganti nama output:
 ```bash
 ./host.py -t example.com -o my-scan-result.txt
-```./host.py -t vidio.com -o vidio.txt
+```
 
 #### ➤ Tanpa banner (untuk script otomatis):
 ```bash
