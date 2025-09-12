@@ -105,6 +105,13 @@ apt update -y && apt install python3 git wget -y && mkdir -p ~/host-check && cd 
 ./host.py -t example.com --no-banner
 ```
 
+## 🔁 Update Script
+
+To update to the latest version, simply run:
+
+```bash
+./update
+```
 ---
 
 ## 💡 Contoh Output (Terminal)
