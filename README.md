@@ -1,19 +1,51 @@
-## ✅ Cara Gunakan (Cuma 1 Perintah!)
+### ✅ Cara Gunakan (Cuma 1 Perintah!)
 
+
+### instal dependensi:
+
+##Untuk Termux (Android)
+
+#1. Instal Termux dari F-Droid (bukan dari Play Store)
+#2. Update package dan 
+
+```bash
+pkg update
+pkg install python git
+pip install beautifulsoup4 requests
+```
+
+
+###Untuk VPS (Linux)
+
+#1. Update sistem dan instal dependensi:
+
+```bash
+sudo apt update
+sudo apt install python3 python3-pip git
+```
+
+#1. Instal modul Python yang diperlukan:
+
+```bash
+pip3 install beautifulsoup4 requests
+```
+------------------------------------------------------------------------------------------
+|                         ### INSTALL SCRIPT ###                                         | 
+------------------------------------------------------------------------------------------
 ### 🔧 1. Simpan file `user-agents.txt` di folder yang sama  
 Pastikan file ini ada dan berisi 1000+ user-agent seperti yang kamu punya.
 
 ### 📄 2. Simpan kode di atas sebagai `host-cli.py`
 
 ```bash
-nano host-cli.py
+nano host.py
 ```
 Tempelkan kode → `Ctrl+O` → `Enter` → `Ctrl+X`
 
 ### 🔐 3. Beri izin eksekusi
 
 ```bash
-chmod +x host-cli.py
+chmod +x host.py
 ```
 
 # Auto install
