@@ -9,24 +9,14 @@
 ### 2. Update package dan 
 
 ```bash
-pkg update
-pkg install python git
+pkg install python
 pip install beautifulsoup4 requests
 ```
 
-
-## Untuk VPS (Linux)
-
-### 1. Update sistem dan instal dependensi:
+## Untuk VPS:
 
 ```bash
-sudo apt update
-sudo apt install python3 python3-pip git
-```
-
-### 1. Instal modul Python yang diperlukan:
-
-```bash
+sudo apt install python3 python3-pip
 pip3 install beautifulsoup4 requests
 ```
 
@@ -34,28 +24,60 @@ pip3 install beautifulsoup4 requests
 
   #  【𝐈𝐍𝐒𝐓𝐀𝐋𝐋 𝐒𝐂𝐑𝐈𝐏𝐓】
 
-### 🔧 1. Simpan file `user-agents.txt` di folder yang sama  
-Pastikan file ini ada dan berisi 1000+ user-agent seperti yang kamu punya.
 
-### 📄 2. Simpan kode di atas sebagai `host.py`
+# 1. Download Script (Manual)
+
+## Untuk Termux:
 
 ```bash
-nano host.py
+pkg update
+pkg install git
+git clone https://github.com/Nizwara/host-check.git
 ```
-Tempelkan kode → `Ctrl+O` → `Enter` → `Ctrl+X`
 
-### 🔐 3. Beri izin eksekusi
+## Untuk VPS:
+
+```bash
+sudo apt update
+sudo apt install git
+git clone https://github.com/Nizwara/host-check.git
+```
+
+### 2. Masuk ke Direktori Script
+
+```bash
+cd host-check
+```
+
+### 3. Lihat Isi Folder
+
+```bash
+ls -la
+```
+
+Anda akan melihat struktur folder seperti ini:
+
+```
+host-check/
+├── host.py
+├── user-agents.txt
+└── README.md
+```
+
+
+### 🔐 4. Beri izin eksekusi
 
 ```bash
 chmod +x host.py
 ```
 
-# Auto install
-### Untuk Termux
+# 2. Download Script (Otomatis)
+
+## Untuk Termux
 ```bash
 pkg update -y && pkg install python git wget -y && mkdir -p ~/host-check && cd ~/host-check && wget https://raw.githubusercontent.com/Nizwara/host-check/main/host.py && wget https://raw.githubusercontent.com/Nizwara/host-check/main/user-agents.txt && pip install dnspython requests beautifulsoup4 && chmod +x host.py
 ```
-### Untuk VPS
+## Untuk VPS
 ```bash
 apt update -y && apt install python3 git wget -y && mkdir -p ~/host-check && cd ~/host-check && wget https://raw.githubusercontent.com/Nizwara/host-check/main/host.py && wget https://raw.githubusercontent.com/Nizwara/host-check/main/user-agents.txt && pip3 install dnspython requests beautifulsoup4 && chmod +x host.py
 ```
@@ -210,4 +232,3 @@ Tambahkan baris ini untuk scan `example.com` tiap jam:
 ```
 
 ---
-
