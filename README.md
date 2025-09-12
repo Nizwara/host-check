@@ -68,7 +68,7 @@ host-check/
 ### 🔐 4. Beri izin eksekusi
 
 ```bash
-chmod +x host.py
+chmod +x host-check/*
 ```
 
 # 2. Download Script (Otomatis)
