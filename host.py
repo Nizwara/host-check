@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Host Response Checker v2.9 Final 
+# Host Response Checker v2.9.2 Final 
 # By Killer-vpn | https://github.com/Nizwara
 
 # ==========================
@@ -528,7 +528,7 @@ def main():
   / // /__  ___ / /_  / _ \___ ___ ___  ___  ___  ___ ___ 
  / _  / _ \(_-</ __/ / , _/ -_|_-</ _ \/ _ \/ _ \(_-</ -_)
 /_//_/\___/___/\__/ /_/|_|\__/___/ .__/\___/_//_/___/\__/ 
-                                /_/             V.2.9 FINAL
+                                /_/             V.2.9.2 FINAL
     
          By : Killer-vpn
          Github : github.com/Nizwara
