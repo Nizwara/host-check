@@ -30,7 +30,7 @@ sudo apt install python3 python3-pip git
 pip3 install beautifulsoup4 requests
 ```
 ------------------------------------------------------------------------------------------
-|                         ### INSTALL SCRIPT ###                                         | 
+|                         𒅒꧁ INSTALL SCRIPT ꧂𒅒                                    | 
 ------------------------------------------------------------------------------------------
 ### 🔧 1. Simpan file `user-agents.txt` di folder yang sama  
 Pastikan file ini ada dan berisi 1000+ user-agent seperti yang kamu punya.
