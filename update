@@ -1,12 +1,14 @@
 #!/bin/bash
 # update - Auto-update host.py and user-agents.txt from GitHub
-# By Killer-vpn | https://github.com/Nizwara/host-check
+# By Wannazid | https://github.com/Nizwara/host-check
 
-set -euo pipefail  # Exit on any error
+set -euo pipefail
 
-REPO_URL="https://github.com/Nizwara/host-check"
-HOST_PY_URL="$REPO_URL/raw/main/host.py"
-USER_AGENTS_URL="$REPO_URL/raw/main/user-agents.txt"
+REPO_OWNER="Nizwara"
+REPO_NAME="host-check"
+BRANCHES=("main" "master")
+HOST_PY_URL_BASE="https://raw.githubusercontent.com/$REPO_OWNER/$REPO_NAME"
+USER_AGENTS_URL_BASE="$HOST_PY_URL_BASE"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 HOST_PY="$SCRIPT_DIR/host.py"
@@ -14,7 +16,7 @@ USER_AGENTS="$SCRIPT_DIR/user-agents.txt"
 BACKUP_DIR="$SCRIPT_DIR/.backups"
 DATE=$(date +"%Y%m%d_%H%M%S")
 
-echo "🚀 Updating Host Response Checker from $REPO_URL..."
+echo "🚀 Updating Host Response Checker from https://github.com/$REPO_OWNER/$REPO_NAME..."
 
 # Buat folder backup jika belum ada
 mkdir -p "$BACKUP_DIR"
@@ -30,46 +32,78 @@ if [[ -f "$USER_AGENTS" ]]; then
     echo "💾 Backed up old user-agents.txt → $BACKUP_DIR/user-agents.txt.$DATE.bak"
 fi
 
-# Cek koneksi internet
-if ! command -v curl >/dev/null 2>&1; then
-    if ! command -v wget >/dev/null 2>&1; then
-        echo "❌ Error: Neither 'curl' nor 'wget' found. Install one to proceed."
-        exit 1
-    else
-        DOWNLOADER="wget -q -O"
-    fi
-else
+# Cek koneksi internet & downloader
+if command -v curl >/dev/null 2>&1; then
     DOWNLOADER="curl -s -o"
+elif command -v wget >/dev/null 2>&1; then
+    DOWNLOADER="wget -q -O"
+else
+    echo "❌ Error: Neither 'curl' nor 'wget' found. Install one to proceed."
+    exit 1
 fi
 
-# Download host.py
-echo "⬇️  Downloading latest host.py..."
-if $DOWNLOADER "$HOST_PY" "$HOST_PY_URL"; then
-    echo "✅ host.py updated successfully!"
-else
-    echo "❌ Failed to download host.py. Restoring backup..."
+# Fungsi untuk download dan cek keberhasilan
+download_file() {
+    local url="$1"
+    local dest="$2"
+    local filename=$(basename "$dest")
+
+    echo "⬇️  Downloading latest $filename..."
+    if $DOWNLOADER "$dest" "$url"; then
+        # Cek apakah file berisi 404 atau error
+        if grep -q "404: Not Found\|Not Found\|Repository not found" "$dest" 2>/dev/null; then
+            echo "❌ Downloaded file contains 404 error. Trying next branch..."
+            return 1
+        fi
+        # Cek apakah file kosong
+        if [[ ! -s "$dest" ]]; then
+            echo "❌ Downloaded file is empty. Trying next branch..."
+            return 1
+        fi
+        echo "✅ $filename updated successfully!"
+        return 0
+    else
+        echo "❌ Failed to download $filename. Trying next branch..."
+        return 1
+    fi
+}
+
+# Coba semua branch
+for branch in "${BRANCHES[@]}"; do
+    HOST_PY_URL="$HOST_PY_URL_BASE/$branch/host.py"
+    USER_AGENTS_URL="$USER_AGENTS_URL_BASE/$branch/user-agents.txt"
+
+    if download_file "$HOST_PY_URL" "$HOST_PY"; then
+        echo "ℹ️  Using branch: $branch"
+        break
+    fi
+done
+
+# Jika gagal semua branch
+if [[ ! -s "$HOST_PY" ]] || grep -q "404: Not Found\|Not Found" "$HOST_PY" 2>/dev/null; then
+    echo "❌ All branches failed. Restoring backup..."
     mv "$BACKUP_DIR/host.py.$DATE.bak" "$HOST_PY" 2>/dev/null || true
     exit 1
 fi
 
-# Download user-agents.txt
-echo "⬇️  Downloading latest user-agents.txt..."
-if $DOWNLOADER "$USER_AGENTS" "$USER_AGENTS_URL"; then
-    echo "✅ user-agents.txt updated successfully!"
-else
+# Coba download user-agents.txt dari branch yang sama
+for branch in "${BRANCHES[@]}"; do
+    USER_AGENTS_URL="$USER_AGENTS_URL_BASE/$branch/user-agents.txt"
+    if download_file "$USER_AGENTS_URL" "$USER_AGENTS"; then
+        echo "ℹ️  Using branch: $branch for user-agents.txt"
+        break
+    fi
+done
+
+# Jika gagal download user-agents.txt, biarkan yang lama tetap ada
+if [[ ! -s "$USER_AGENTS" ]]; then
     echo "⚠️  Failed to download user-agents.txt. Keeping existing file."
-    # Jangan restore backup jika gagal — biarkan yang lama tetap dipakai
+    rm -f "$USER_AGENTS" 2>/dev/null
+    mv "$BACKUP_DIR/user-agents.txt.$DATE.bak" "$USER_AGENTS" 2>/dev/null || true
 fi
 
 # Beri izin eksekusi
 chmod +x "$HOST_PY"
-
-# Verifikasi apakah file baru valid
-if [[ ! -s "$HOST_PY" ]] || grep -q "404: Not Found" "$HOST_PY"; then
-    echo "❌ Downloaded file is empty or contains 404 error. Restoring backup..."
-    mv "$BACKUP_DIR/host.py.$DATE.bak" "$HOST_PY"
-    exit 1
-fi
 
 echo ""
 echo "🎉 Update completed successfully!"
