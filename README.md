@@ -105,6 +105,38 @@ apt update -y && apt install python3 git wget -y && mkdir -p ~/host-check && cd 
 ```bash
 ./host.py -t example.com --no-banner
 ```
+## 🔍 **Cara Menggunakan Multi-Target**
+
+
+#### 📌 Langkah 1: Buat File Daftar Domain
+
+Buat file teks bernama misalnya `domains.txt`, isi dengan satu domain per baris:
+
+```bash
+nano domains.txt
+```
+
+Isi contoh:
+```
+vidio.com
+google.com
+youtube.com
+facebook.com
+twitter.com
+instagram.com
+```
+
+Simpan (`Ctrl+O`, `Enter`, `Ctrl+X`).
+
+> 💡 Bisa berisi ratusan atau ribuan domain — script akan proses satu per satu.
+
+---
+
+#### 📌 Langkah 2: Jalankan Script dengan Mode Multi
+
+```bash
+./host.py -m domains.txt
+```
 
 ## 🔁 Update Script
 
