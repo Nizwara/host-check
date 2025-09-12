@@ -16,12 +16,12 @@ Tempelkan kode → `Ctrl+O` → `Enter` → `Ctrl+X`
 chmod +x host-cli.py
 ```
 
-### Auto install
-# Untuk Termux
+# Auto install
+### Untuk Termux
 ```bash
 pkg update -y && pkg install python git wget -y && mkdir -p ~/host-check && cd ~/host-check && wget https://raw.githubusercontent.com/Nizwara/host-check/main/host.py && wget https://raw.githubusercontent.com/Nizwara/host-check/main/user-agents.txt && pip install dnspython requests beautifulsoup4 && chmod +x host.py
 ```
-# Untuk VPS
+### Untuk VPS
 ```bash
 apt update -y && apt install python3 git wget -y && mkdir -p ~/host-check && cd ~/host-check && wget https://raw.githubusercontent.com/Nizwara/host-check/main/host.py && wget https://raw.githubusercontent.com/Nizwara/host-check/main/user-agents.txt && pip3 install dnspython requests beautifulsoup4 && chmod +x host.py
 ```
