@@ -2,6 +2,10 @@
 # Host Response Checker v2.9 Final 
 # By Killer-vpn | https://github.com/Nizwara
 
+# Disable all InsecureRequestWarning from urllib3
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
 import ssl
 import requests
 import socket
