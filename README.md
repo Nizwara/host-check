@@ -43,13 +43,13 @@ sudo apt install git
 git clone https://github.com/Nizwara/host-check.git
 ```
 
-### 2. Masuk ke Direktori Script
+## 2. Masuk ke Direktori Script
 
 ```bash
 cd host-check
 ```
 
-### 3. Lihat Isi Folder
+## 3. Lihat Isi Folder
 
 ```bash
 ls -la
@@ -66,7 +66,7 @@ host-check/
 ```
 
 
-### 🔐 4. Beri izin eksekusi
+## 🔐 4. Beri izin eksekusi
 
 ```bash
 chmod +x host-check/*
@@ -84,24 +84,24 @@ apt update -y && apt install python3 git wget -y && mkdir -p ~/host-check && cd 
 ```
 
 
-### 🚀 4. Jalankan!
+## 🚀 4. Jalankan!
 
-#### ➤ Scan satu target:
+### ➤ Scan satu target:
 ```bash
 ./host.py -t example.com
 ```
 
-#### ➤ Scan dengan proxy:
+### ➤ Scan dengan proxy:
 ```bash
 ./host.py -t example.com -p http://127.0.0.1:8080
 ```
 
-#### ➤ Ganti nama output:
+### ➤ Ganti nama output:
 ```bash
 ./host.py -t example.com -o my-scan-result.txt
 ```
 
-#### ➤ Tanpa banner (untuk script otomatis):
+### ➤ Tanpa banner (untuk script otomatis):
 ```bash
 ./host.py -t example.com --no-banner
 ```
