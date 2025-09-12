@@ -1,6 +1,6 @@
 #!/bin/bash
 # update - Auto-update host.py and user-agents.txt from GitHub
-# By Wannazid | https://github.com/Nizwara/host-check
+# By Killer-vpn | https://github.com/Nizwara/host-check
 
 set -euo pipefail
 
