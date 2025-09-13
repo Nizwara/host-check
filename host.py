@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# Host Response Checker v2.9.2 Final 
-# By Killer-vpn | https://github.com/Nizwara
+# Host Response Checker v2.9.2 FIXED - By Killer-vpn | https://github.com/Nizwara 
 
 # ==========================
 # SILENCE INSECURE REQUEST WARNINGS
@@ -145,6 +144,7 @@ def get_random_user_agent():
 # ==========================
 from bs4 import BeautifulSoup
 import argparse
+import dns.resolver  # ← ADDED FOR DNS LOOKUP
 
 # ==========================
 # MAIN SCAN CLASS
@@ -166,14 +166,14 @@ class HostResponse:
             try:
                 answers = dns.resolver.resolve(domain, record_type)
                 dns_data[record_type] = [str(rdata) for rdata in answers]
-            except:
+            except Exception:
                 pass
         return dns_data
 
     def get_subdomains(self):
         subdomains = set()
         sources = [
-            f'https://rapiddns.io/subdomain/{self.target}?full=1&down=0',
+            f'https://rapiddns.io/subdomain/{self.target}?full=1&down=0',  # ✅ FIXED: HAPUS SPASI!
             f'https://crt.sh/?q=%.{self.target}&output=json',
         ]
         
@@ -505,7 +505,7 @@ def main():
     check_and_install_deps()
 
     parser = argparse.ArgumentParser(
-        description='Host Response Checker v2.9.2 - No Warnings | Multi-Target | Clean Terminal | Full File Output',
+        description='Host Response Checker v2.9.2 FIXED - No Warnings | Multi-Target | Clean Terminal | Full File Output',
         formatter_class=argparse.RawTextHelpFormatter
     )
     
@@ -528,7 +528,7 @@ def main():
   / // /__  ___ / /_  / _ \___ ___ ___  ___  ___  ___ ___ 
  / _  / _ \(_-</ __/ / , _/ -_|_-</ _ \/ _ \/ _ \(_-</ -_)
 /_//_/\___/___/\__/ /_/|_|\__/___/ .__/\___/_//_/___/\__/ 
-                                /_/             V.2.9.2 FINAL
+                                /_/             V.2.9.2 FIXED
     
          By : Killer-vpn
          Github : github.com/Nizwara
