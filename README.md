@@ -95,6 +95,10 @@ apt update -y && apt install python3 git wget -y && mkdir -p ~/host-check && cd 
 ```bash
 ./host.py -t example.com -p http://127.0.0.1:8080
 ```
+#### EXEMPLE
+```bash
+./host.py -t vidio.com -o hasil.txt -p 36.95.152.58:12137
+```
 
 ### ➤ Ganti nama output:
 ```bash
