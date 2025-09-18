@@ -76,11 +76,11 @@ chmod +x host-check/*
 
 ## Untuk Termux
 ```bash
-pkg update -y && pkg install python git wget -y && mkdir -p ~/host-check && cd ~/host-check && wget https://raw.githubusercontent.com/Nizwara/host-check/main/host.py && wget https://raw.githubusercontent.com/Nizwara/host-check/main/user-agents.txt && pip install dnspython requests beautifulsoup4 && chmod +x host.py
+pkg update -y && pkg install python git wget -y && git clone https://github.com/Nizwara/host-check.git && pip3 install dnspython requests beautifulsoup4 && chmod +x host-check/*
 ```
 ## Untuk VPS
 ```bash
-apt update -y && apt install python3 git wget -y && mkdir -p ~/host-check && cd ~/host-check && wget https://raw.githubusercontent.com/Nizwara/host-check/main/host.py && wget https://raw.githubusercontent.com/Nizwara/host-check/main/user-agents.txt && pip3 install dnspython requests beautifulsoup4 && chmod +x host.py
+apt update -y && apt install python3 git wget -y && git clone https://github.com/Nizwara/host-check.git && pip3 install dnspython requests beautifulsoup4 && chmod +x host-check/*
 ```
 
 
