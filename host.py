@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-# Host Response Checker v2.9.2 FIXED - By Killer-vpn | https://github.com/Nizwara 
+# Host Response Checker v3.0 - Enhanced Version
+# By Killer-vpn | https://github.com/Nizwara 
 
 # ==========================
 # SILENCE INSECURE REQUEST WARNINGS
@@ -16,6 +17,7 @@ import sys
 import time
 import json
 import subprocess
+import re
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # ==========================
@@ -30,6 +32,8 @@ class Colors:
     RED = '\033[91m'
     ENDC = '\033[0m'
     BOLD = '\033[1m'
+    MAGENTA = '\033[35m'
+    ORANGE = '\033[33m'
 
 def print_info(msg):
     print(f"{Colors.CYAN}[*] {msg}{Colors.ENDC}")
@@ -42,6 +46,20 @@ def print_warning(msg):
 
 def print_error(msg):
     print(f"{Colors.RED}[!] {msg}{Colors.ENDC}")
+
+def print_cdn(msg, cdn_type):
+    color = Colors.GREEN
+    if "cloudflare" in cdn_type.lower():
+        color = Colors.ORANGE
+    elif "akamai" in cdn_type.lower():
+        color = Colors.MAGENTA
+    elif "google" in cdn_type.lower():
+        color = Colors.BLUE
+    elif "amazon" in cdn_type.lower():
+        color = Colors.CYAN
+    elif "unknown" in cdn_type.lower() or "none" in cdn_type.lower():
+        color = Colors.RED
+    print(f"{color}{msg}{Colors.ENDC}")
 
 # ==========================
 # AUTO-INSTALL DEPENDENCIES (SEKALI SAJA)
@@ -144,12 +162,130 @@ def get_random_user_agent():
 # ==========================
 from bs4 import BeautifulSoup
 import argparse
-import dns.resolver  # ← ADDED FOR DNS LOOKUP
+import dns.resolver
+
+# ==========================
+# CDN DETECTION FUNCTIONS
+# ==========================
+def detect_cdn_from_headers(headers):
+    """
+    Identifies the CDN provider from HTTP response headers.
+    """
+    server_header = headers.get('Server', '').lower()
+    x_served_by = headers.get('X-Served-By', '').lower()
+    via_header = headers.get('Via', '').lower()
+    x_cdn = headers.get('X-CDN', '').lower()
+    x_cache = headers.get('X-Cache', '').lower()
+
+    # Cloudflare
+    if any(x in server_header for x in ['cloudflare']) or any(x in via_header for x in ['cloudflare']):
+        return 'Cloudflare'
+    
+    # Akamai
+    if any(x in server_header for x in ['akamai', 'akamaighost']) or any(x in x_served_by for x in ['akamai']):
+        return 'Akamai'
+
+    # Amazon CloudFront
+    if any(x in server_header for x in ['cloudfront']) or any(x in x_served_by for x in ['cloudfront']) or 'x-amz-cf-id' in headers:
+        return 'Amazon CloudFront'
+
+    # Google Cloud CDN / GWS
+    if any(x in server_header for x in ['gfe', 'google', 'gws']) or 'x-goog-cloud-trace-context' in headers:
+        return 'Google'
+
+    # Fastly
+    if any(x in server_header for x in ['fastly']) or any(x in x_served_by for x in ['fastly']):
+        return 'Fastly'
+    
+    # Netlify
+    if any(x in server_header for x in ['netlify']):
+        return 'Netlify'
+
+    # Incapsula
+    if any(x in server_header for x in ['incapsula']):
+        return 'Incapsula'
+
+    # Sucuri
+    if any(x in server_header for x in ['sucuri']) or any(x in x_served_by for x in ['sucuri']):
+        return 'Sucuri'
+
+    # Edgecast
+    if any(x in server_header for x in ['ecd', 'edgecast']):
+        return 'Edgecast'
+    
+    # KeyCDN
+    if any(x in server_header for x in ['keycdn']):
+        return 'KeyCDN'
+    
+    # Varnish
+    if any(x in server_header for x in ['varnish']):
+        return 'Varnish'
+        
+    # Microsoft Azure CDN
+    if any(x in server_header for x in ['azure', 'ms-azure']) or any(x in x_served_by for x in ['azure']):
+        return 'Azure CDN'
+
+    # Vercel
+    if any(x in server_header for x in ['vercel']):
+        return 'Vercel'
+
+    # Tengine
+    if any(x in server_header for x in ['tengine']):
+        return 'Tengine'
+
+    # LiteSpeed
+    if any(x in server_header for x in ['litespeed']):
+        return 'LiteSpeed'
+    
+    # Apache
+    if any(x in server_header for x in ['apache']):
+        return 'Apache'
+    
+    # Nginx
+    if any(x in server_header for x in ['nginx']):
+        return 'Nginx'
+    
+    # OpenResty
+    if any(x in server_header for x in ['openresty']):
+        return 'OpenResty'
+
+    # Tencent Cloud
+    if any(x in server_header for x in ['tencent']) or any(x in via_header for x in ['tencent']):
+        return 'Tencent Cloud'
+    
+    # StackPath
+    if any(x in server_header for x in ['stackpath']):
+        return 'StackPath'
+    
+    # CDN77
+    if any(x in server_header for x in ['cdn77']):
+        return 'CDN77'
+    
+    # BunnyCDN
+    if any(x in server_header for x in ['bunnycdn']):
+        return 'BunnyCDN'
+
+    # Check for other CDN headers
+    if 'x-cdn' in headers:
+        return f"Unknown CDN (X-CDN: {headers['x-cdn']})"
+    
+    if 'x-cache' in headers and 'cloudflare' in headers['x-cache'].lower():
+        return 'Cloudflare'
+    
+    if 'cf-ray' in headers:
+        return 'Cloudflare'
+    
+    if 'x-akamai-transformed' in headers:
+        return 'Akamai'
+    
+    if 'x-edge-location' in headers:
+        return 'Amazon CloudFront'
+
+    return 'None'
 
 # ==========================
 # MAIN SCAN CLASS
 # ==========================
-
 class HostResponse:
     def __init__(self, target, user_agent, proxy=None, timeout=5):
         self.target = target
@@ -173,7 +309,7 @@ class HostResponse:
     def get_subdomains(self):
         subdomains = set()
         sources = [
-            f'https://rapiddns.io/subdomain/{self.target}?full=1&down=0',  # ✅ FIXED: HAPUS SPASI!
+            f'https://rapiddns.io/subdomain/{self.target}?full=1&down=0',
             f'https://crt.sh/?q=%.{self.target}&output=json',
         ]
         
@@ -233,6 +369,8 @@ class HostResponse:
             response = requests.get(url, headers=headers, timeout=self.timeout, 
                                   verify=False, allow_redirects=True, proxies=proxies)
             
+            cdn_info = detect_cdn_from_headers(response.headers)
+            
             server_info = {
                 'status_code': response.status_code,
                 'server': response.headers.get('Server', 'N/A'),
@@ -243,7 +381,8 @@ class HostResponse:
                 'strict-transport-security': response.headers.get('Strict-Transport-Security', 'N/A'),
                 'redirects': len(response.history),
                 'final_url': response.url,
-                'response_time': response.elapsed.total_seconds()
+                'response_time': response.elapsed.total_seconds(),
+                'cdn': cdn_info
             }
             return server_info
         except Exception as e:
@@ -354,22 +493,22 @@ class HostResponse:
 def format_results_for_terminal(data):
     """Format output for TERMINAL — includes Subdomains Found (10 first + count)"""
     output = []
-    output.append(f"\n[{data['timestamp']}] Results for: {data['target']}")
-    output.append("=" * 60)
+    output.append(f"{Colors.HEADER}[{data['timestamp']}] Results for: {data['target']}{Colors.ENDC}")
+    output.append(f"{Colors.BLUE}{'=' * 60}{Colors.ENDC}")
     
     if data['dns_info']:
-        output.append("\nDNS Information:")
+        output.append(f"\n{Colors.CYAN}DNS Information:{Colors.ENDC}")
         for record_type, values in data['dns_info'].items():
             output.append(f"  {record_type}: {', '.join(values)}")
     
     if data['subdomains']:
-        output.append(f"\nSubdomains Found ({len(data['subdomains'])}):")
+        output.append(f"\n{Colors.CYAN}Subdomains Found ({len(data['subdomains'])}):{Colors.ENDC}")
         for subdomain in data['subdomains'][:10]:
             output.append(f"  {subdomain}")
         if len(data['subdomains']) > 10:
-            output.append(f"  ... and {len(data['subdomains']) - 10} more")
+            output.append(f"  {Colors.YELLOW}... and {len(data['subdomains']) - 10} more{Colors.ENDC}")
 
-    output.append("\nHTTP Results:")
+    output.append(f"\n{Colors.CYAN}HTTP Results:{Colors.ENDC}")
     for protocol, result in data['http_results'].items():
         output.append(f"  {protocol.upper()}:")
         if 'error' in result:
@@ -378,18 +517,21 @@ def format_results_for_terminal(data):
             output.append(f"    Status: {result.get('status_code', 'N/A')}")
             output.append(f"    Server: {result.get('server', 'N/A')}")
             output.append(f"    X-Powered-By: {result.get('x-powered-by', 'N/A')}")
+            cdn_info = result.get('cdn', 'None')
+            cdn_output = f"    CDN: {cdn_info}"
+            print_cdn(cdn_output, cdn_info)
             output.append(f"    Response Time: {result.get('response_time', 0):.2f}s")
             if result.get('redirects', 0) > 0:
                 output.append(f"    Redirects: {result.get('redirects', 0)}")
                 output.append(f"    Final URL: {result.get('final_url', 'N/A')}")
 
     if data['open_ports']:
-        output.append(f"\nOpen Ports ({len(data['open_ports'])}): {', '.join(map(str, data['open_ports']))}")
+        output.append(f"\n{Colors.CYAN}Open Ports ({len(data['open_ports'])}):{Colors.ENDC} {', '.join(map(str, data['open_ports']))}")
     else:
-        output.append("\nNo open ports found")
+        output.append(f"\n{Colors.YELLOW}No open ports found{Colors.ENDC}")
 
     if data['ssl_info']:
-        output.append("\nSSL Information:")
+        output.append(f"\n{Colors.CYAN}SSL Information:{Colors.ENDC}")
         output.append(f"  Version: {data['ssl_info'].get('version', 'N/A')}")
         output.append(f"  Cipher: {data['ssl_info'].get('cipher', 'N/A')}")
         if 'subject' in data['ssl_info']:
@@ -399,7 +541,7 @@ def format_results_for_terminal(data):
         output.append(f"  Valid From: {data['ssl_info'].get('not_before', 'N/A')}")
         output.append(f"  Valid To: {data['ssl_info'].get('not_after', 'N/A')}")
 
-    output.append("=" * 60)
+    output.append(f"{Colors.BLUE}{'=' * 60}{Colors.ENDC}")
     return "\n".join(output)
 
 
@@ -414,11 +556,11 @@ def format_results_for_file(data):
         for record_type, values in data['dns_info'].items():
             output.append(f"  {record_type}: {', '.join(values)}")
 
-    # 👇 HANYA TAMPILKAN FULL LIST — TANPA "Subdomains Found (X):" DAN 10 PERTAMA
+    # FULL SUBDOMAIN LIST
     if data['subdomains']:
-        output.append("\n--- FULL SUBDOMAIN LIST (for file export) ---")
+        output.append("\n--- FULL SUBDOMAIN LIST ---")
         for subdomain in data['subdomains']:
-            output.append(f"  {subdomain}")
+            output.append(f"{subdomain}")
         output.append("--- END FULL LIST ---")
 
     output.append("\nHTTP Results:")
@@ -430,6 +572,7 @@ def format_results_for_file(data):
             output.append(f"    Status: {result.get('status_code', 'N/A')}")
             output.append(f"    Server: {result.get('server', 'N/A')}")
             output.append(f"    X-Powered-By: {result.get('x-powered-by', 'N/A')}")
+            output.append(f"    CDN: {result.get('cdn', 'N/A')}")
             output.append(f"    Response Time: {result.get('response_time', 0):.2f}s")
             if result.get('redirects', 0) > 0:
                 output.append(f"    Redirects: {result.get('redirects', 0)}")
@@ -451,24 +594,27 @@ def format_results_for_file(data):
         output.append(f"  Valid From: {data['ssl_info'].get('not_before', 'N/A')}")
         output.append(f"  Valid To: {data['ssl_info'].get('not_after', 'N/A')}")
 
-    # 👇 LEGACY FORMAT — HANYA DI FILE
-    output.append("\n--- LEGACY FORMAT (v1.0 style: subdomain|ip|status|server|ports|protocol|) ---")
+    # IMPROVED LEGACY FORMAT
+    output.append("\n--- IMPROVED LEGACY FORMAT ---")
+    output.append("Format: subdomain|ip|status|server|cdn|ports|protocol")
     for subdomain in data['subdomains']:
         ip = "None"
         if 'A' in data['dns_info'] and data['dns_info']['A']:
             ip = data['dns_info']['A'][0]
 
         status = "None"
-        if 'https' in data['http_results']:
-            status = data['http_results']['https'].get('status_code', 'None')
-        elif 'http' in data['http_results']:
-            status = data['http_results']['http'].get('status_code', 'None')
-
         server = "None"
-        if 'https' in data['http_results']:
-            server = data['http_results']['https'].get('server', 'None')
-        elif 'http' in data['http_results']:
-            server = data['http_results']['http'].get('server', 'None')
+        cdn = "None"
+        
+        # Try to get info from HTTPS first, then HTTP
+        for protocol in ['https', 'http']:
+            if protocol in data['http_results'] and 'error' not in data['http_results'][protocol]:
+                if status == "None":
+                    status = data['http_results'][protocol].get('status_code', 'None')
+                if server == "None":
+                    server = data['http_results'][protocol].get('server', 'None')
+                if cdn == "None":
+                    cdn = data['http_results'][protocol].get('cdn', 'None')
 
         ports = "None"
         if data['open_ports']:
@@ -478,9 +624,9 @@ def format_results_for_file(data):
         if data['ssl_info']:
             protocol = data['ssl_info'].get('version', 'None')
 
-        legacy_line = f"{subdomain}|{ip}|{status}|{server}|{ports}|{protocol}|"
-        output.append(f"  {legacy_line}")
-    output.append("--- END LEGACY FORMAT ---")
+        legacy_line = f"{subdomain}|{ip}|{status}|{server}|{cdn}|{ports}|{protocol}"
+        output.append(legacy_line)
+    output.append("--- END IMPROVED LEGACY FORMAT ---")
 
     output.append("=" * 60)
     return "\n".join(output)
@@ -505,7 +651,7 @@ def main():
     check_and_install_deps()
 
     parser = argparse.ArgumentParser(
-        description='Host Response Checker v2.9.2 FIXED - No Warnings | Multi-Target | Clean Terminal | Full File Output',
+        description='Host Response Checker v3.0 - Enhanced Version | CDN Detection | Color Output | Improved Formatting',
         formatter_class=argparse.RawTextHelpFormatter
     )
     
@@ -524,15 +670,15 @@ def main():
 
     if not args.no_banner:
         print(f"""
-   __ __         __    ___                                
-  / // /__  ___ / /_  / _ \___ ___ ___  ___  ___  ___ ___ 
- / _  / _ \(_-</ __/ / , _/ -_|_-</ _ \/ _ \/ _ \(_-</ -_)
-/_//_/\___/___/\__/ /_/|_|\__/___/ .__/\___/_//_/___/\__/ 
-                                /_/             V.2.9.2 FIXED
+{Colors.HEADER}   __ __         __    ___                                {Colors.ENDC}
+{Colors.HEADER}  / // /__  ___ / /_  / _ \___ ___ ___  ___  ___  ___ ___ {Colors.ENDC}
+{Colors.HEADER} / _  / _ \(_-</ __/ / , _/ -_|_-</ _ \/ _ \/ _ \(_-</ -_){Colors.ENDC}
+{Colors.HEADER}/_//_/\___/___/\__/ /_/|_|\__/___/ .__/\___/_//_/___/\__/ {Colors.ENDC}
+{Colors.HEADER}                                /_/             V.3.0 ENHANCED{Colors.ENDC}
     
-         By : Killer-vpn
-         Github : github.com/Nizwara
-         Blog : www.nizwara.biz.id
+{Colors.CYAN}         By : Killer-vpn{Colors.ENDC}
+{Colors.CYAN}         Github : github.com/Nizwara{Colors.ENDC}
+{Colors.CYAN}         Blog : www.nizwara.biz.id{Colors.ENDC}
 """)
         if args.target:
             print(f"{Colors.CYAN}[+] Target: {args.target}{Colors.ENDC}")
@@ -541,7 +687,7 @@ def main():
         print(f"{Colors.CYAN}[+] Output: {args.output}{Colors.ENDC}")
         if args.proxy:
             print(f"{Colors.CYAN}[+] Proxy: {args.proxy}{Colors.ENDC}")
-        print("-" * 60)
+        print(f"{Colors.BLUE}{'-' * 60}{Colors.ENDC}")
 
     user_agent = get_random_user_agent()
     print_info(f"Using User-Agent: {user_agent[:50]}...")
